@@ -1,0 +1,84 @@
+<beans:beans xmlns="http://www.springframework.org/schema/security"
+             xmlns:beans="http://www.springframework.org/schema/beans"
+             xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+             xsi:schemaLocation="http://www.springframework.org/schema/beans
+ http://www.springframework.org/schema/beans/spring-beans-3.0.xsd
+ http://www.springframework.org/schema/security
+ http://www.springframework.org/schema/security/spring-security-3.2.xsd">
+    
+<beans:bean id="webexpressionHandler" 
+            class="org.springframework.security.web.access.expression.DefaultWebSecurityExpressionHandler"/>
+
+<beans:bean id="encoder"
+            class="org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder"/>
+
+    <beans:bean id="jinjaAuthenticationSuccessHandler"
+        class="com.sg.fidgetblog.security.JinjaSimpleUrlAuthenticationSuccessHandler" />
+
+
+
+<authentication-manager>
+    <authentication-provider>
+            <password-encoder ref="encoder"/>
+            <jdbc-user-service id="UserService"
+                               data-source-ref="dataSource"
+                               users-by-username-query=
+ "select username, password, isactive as enabled from User where UserName = ?"
+                               authorities-by-username-query=
+ "select * from Authorities where UserName = ?" />
+    </authentication-provider>
+</authentication-manager>
+
+<http pattern="/login" security="none" />
+<http pattern="/css/**" security="none" />
+<http pattern="/js/**" security="none" />
+<http pattern="/fonts/**" security="none" />
+
+<http auto-config="true">
+    <form-login login-processing-url="/j_spring_security_check"
+                login-page="/login"
+                authentication-failure-url="/login?login_error=1"
+                authentication-success-handler-ref="jinjaAuthenticationSuccessHandler"/>
+
+    <intercept-url pattern="/"
+                   access="IS_AUTHENTICATED_ANONYMOUSLY"/>     
+    <intercept-url pattern="/home" 
+                   access="IS_AUTHENTICATED_ANONYMOUSLY"/>
+    <intercept-url pattern="/showImage/**" 
+                   access="IS_AUTHENTICATED_ANONYMOUSLY"/>
+    <intercept-url pattern="/register" 
+                   access="IS_AUTHENTICATED_ANONYMOUSLY"/>
+    <intercept-url pattern="/createuser" 
+                   access="IS_AUTHENTICATED_ANONYMOUSLY"/>
+    <intercept-url pattern="/viewpost/**" 
+                   access="IS_AUTHENTICATED_ANONYMOUSLY"/>
+    <intercept-url pattern="/adminhome" 
+                   access="ROLE_ADMIN"/>
+    <intercept-url pattern="/adminpostform" 
+                   access="ROLE_ADMIN"/>
+    <intercept-url pattern="/makeadminedit" 
+                   access="ROLE_ADMIN"/>
+    <intercept-url pattern="/contentmanagerhome" 
+                   access="ROLE_CONTENTMANAGER,ROLE_ADMIN"/>  
+    <intercept-url pattern="/contentmanager-deletepost/**" 
+                   access="ROLE_CONTENTMANAGER,ROLE_ADMIN"/>
+    <intercept-url pattern="/contentmanagerpostform" 
+                   access="ROLE_CONTENTMANAGER,ROLE_ADMIN"/>
+    <intercept-url pattern="/deletepost/**" 
+                   access="ROLE_CONTENTMANAGER,ROLE_ADMIN"/>
+    <intercept-url pattern="/newpostform" 
+                   access="ROLE_CONTENTMANAGER,ROLE_ADMIN"/>
+    <intercept-url pattern="/createpost" 
+                   access="ROLE_CONTENTMANAGER,ROLE_ADMIN"/>
+    <intercept-url pattern="/restorepost/**" 
+                   access="ROLE_CONTENTMANAGER,ROLE_ADMIN"/>
+    <intercept-url pattern="/saveImage" 
+                   access="ROLE_CONTENTMANAGER,ROLE_ADMIN"/>
+    <intercept-url pattern="/comment/**"
+                   access="ROLE_USER"/>
+    
+    <intercept-url pattern="/**"
+                   access="ROLE_USER"/>
+</http>
+
+</beans:beans>
